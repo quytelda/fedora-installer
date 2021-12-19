@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eux
+
 SYS_HOSTNAME=${SYS_HOSTNAME:-fedora}
 SYS_PASSWORD=${SYS_PASSWORD:-'*'}
 
