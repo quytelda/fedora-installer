@@ -17,6 +17,9 @@ parted -a optimal --script -- /dev/vda \
        name 1 boot \
        name 2 system
 
+# Wait for kernel to update /dev
+sleep 1
+
 # Filesystems
 mkfs.fat -F 32 -n boot /dev/vda1
 mkfs.btrfs -L system /dev/vda2
