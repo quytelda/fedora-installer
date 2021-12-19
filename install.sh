@@ -25,7 +25,7 @@ mkdir /mnt/boot
 mount /dev/vda1 /mnt/boot
 
 # Bootstrap system
-dnf --installroot=/mnt --releasever=35 install \
+dnf -y --installroot=/mnt --releasever=35 install \
     @core \
     btrfs-progs \
     dosfstools \
@@ -46,7 +46,7 @@ systemd-firstboot --root=/mnt \
 systemd-nspawn -D /mnt bootctl install
 
 # Kernel
-systemd-nspawn -D /mnt dnf install kernel
+systemd-nspawn -D /mnt dnf -y install kernel
 
 # Boot Entry
 sed -i 's/\(^options[[:space:]]\+\).*/\1ro root=\/dev\/vda2 quiet/g' /mnt/boot/loader/entries/*.conf
