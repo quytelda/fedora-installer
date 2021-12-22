@@ -64,7 +64,7 @@ systemd-nspawn -D /mnt dnf -y install kernel
 # The boot entries generated when installing the kernel reuse the live system's
 # boot flags, which aren't applicable.
 # Overwrite those with something sensible.
-sed -i 's/\(^options[[:space:]]\+\).*/\1ro root=\/dev\/vda2 quiet/g' /mnt/boot/loader/entries/*.conf
+sed -i 's/\(^options[[:space:]]\+\).*/\1ro root=LABEL=system quiet/g' /mnt/boot/loader/entries/*.conf
 
 # Schedule an SELinux relabeling at next boot.
 touch /mnt/.autorelabel
