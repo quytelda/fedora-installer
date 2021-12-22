@@ -5,19 +5,20 @@ set -eux
 SYS_HOSTNAME=${SYS_HOSTNAME:-fedora}
 SYS_PASSWORD=${SYS_PASSWORD:-'*'}
 
-# Partitions
+# Partition the Disk
 parted -a optimal --script -- /dev/vda \
        mklabel gpt \
        \
        mkpart primary 1MiB 1025MiB \
        mkpart primary 1025MiB -1 \
        \
-       set 1 boot on \
-       \
        name 1 boot \
-       name 2 system
+       name 2 system \
+       \
+       set 1 boot on
 
-# Wait for kernel to update /dev
+# Creating filesystems might fail if /dev hasn't updated yet.
+# Sleep briefly while the kernel catches up.
 sleep 1
 
 # Filesystems
@@ -37,7 +38,8 @@ dnf -y --installroot=/mnt --releasever=35 install \
     dosfstools \
     langpacks-en
 
-# fstab
+# Generate an fstab file
+# Use genfstab from the Arch Linux install scripts.
 ./genfstab -L /mnt >> /mnt/etc/fstab
 
 # DNF sets the wrong security context for the passwd and shadow files,
@@ -54,16 +56,18 @@ systemd-firstboot --root=/mnt \
 		  --setup-machine-id \
 		  --root-password-hashed="$SYS_PASSWORD"
 
-# Bootloader
+# Install the Bootloader
 systemd-nspawn -D /mnt bootctl install
 
-# Kernel
+# Install the Kernel
 systemd-nspawn -D /mnt dnf -y install kernel
 
-# Boot Entry
+# The boot entries generated when installing the kernel reuse the live system's
+# boot flags, which aren't applicable.
+# Overwrite those with something sensible.
 sed -i 's/\(^options[[:space:]]\+\).*/\1ro root=\/dev\/vda2 quiet/g' /mnt/boot/loader/entries/*.conf
 
-# SELinux
+# Schedule an SELinux relabeling at next boot.
 touch /mnt/.autorelabel
 
 # Clean up
