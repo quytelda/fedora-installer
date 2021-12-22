@@ -3,7 +3,6 @@
 set -eux
 
 SYS_HOSTNAME=${SYS_HOSTNAME:-fedora}
-SYS_PASSWORD=${SYS_PASSWORD:-'*'}
 
 # Partition the Disk
 parted -a optimal --script -- /dev/vda \
@@ -54,7 +53,7 @@ systemd-firstboot --root=/mnt \
 		  --timezone='America/Los_Angeles' \
 		  --hostname="$SYS_HOSTNAME" \
 		  --setup-machine-id \
-		  --root-password-hashed="$SYS_PASSWORD"
+		  --prompt-root-password
 
 # Install the Bootloader
 systemd-nspawn -D /mnt bootctl install
