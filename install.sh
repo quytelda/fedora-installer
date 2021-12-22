@@ -39,6 +39,12 @@ dnf -y --installroot=/mnt --releasever=35 install \
 # fstab
 ./genfstab -L /mnt >> /mnt/etc/fstab
 
+# DNF sets the wrong security context for the passwd and shadow files,
+# which prevents setting the root password.
+# Temporarily copy the live system's context for these files to fix the issue.
+chcon --reference=/etc/passwd /mnt/etc/passwd
+chcon --reference=/etc/shadow /mnt/etc/shadow
+
 # Configuration
 systemd-firstboot --root=/mnt \
 		  --locale='en_US.UTF-8' \
