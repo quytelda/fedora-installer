@@ -32,6 +32,7 @@ mount /dev/vda1 /mnt/boot
 # Bootstrap system
 dnf -y --installroot=/mnt --releasever=35 install \
     @core \
+    @standard \
     btrfs-progs \
     dosfstools \
     langpacks-en
