@@ -3,6 +3,7 @@
 set -eux
 
 SYS_HOSTNAME=${SYS_HOSTNAME:-fedora}
+LUKS_KEYFILE=${LUKS_KEYFILE:-"$(mktemp)"}
 
 # Partition the Disk
 parted -a optimal --script -- /dev/vda \
@@ -12,7 +13,7 @@ parted -a optimal --script -- /dev/vda \
        mkpart primary 1025MiB -1 \
        \
        name 1 boot \
-       name 2 system \
+       name 2 crypt_system \
        \
        set 1 boot on
 
@@ -20,14 +21,30 @@ parted -a optimal --script -- /dev/vda \
 # Sleep briefly while the kernel catches up.
 sleep 1
 
+# Generate a disk encryption password.
+openssl rand -base64 16 > "$LUKS_KEYFILE"
+
+# Set up disk encryption with LUKS.
+cryptsetup luksFormat \
+	   --verbose \
+	   --type=luks2 \
+	   --key-file="$LUKS_KEYFILE" \
+	   --batch-mode \
+	   /dev/disk/by-partlabel/crypt_system
+
+cryptsetup open \
+	   --key-file="$LUKS_KEYFILE" \
+	   /dev/disk/by-partlabel/crypt_system \
+	   system
+
 # Filesystems
-mkfs.fat -F 32 -n boot /dev/vda1
-mkfs.btrfs -L system /dev/vda2
+mkfs.fat -F 32 -n boot /dev/disk/by-partlabel/boot
+mkfs.btrfs -L system /dev/mapper/system
 
 # Mount
-mount /dev/vda2 /mnt
+mount /dev/mapper/system /mnt
 mkdir /mnt/boot
-mount /dev/vda1 /mnt/boot
+mount /dev/disk/by-partlabel/boot /mnt/boot
 
 # Bootstrap system
 dnf -y --installroot=/mnt --releasever=35 install \
@@ -40,6 +57,11 @@ dnf -y --installroot=/mnt --releasever=35 install \
 # Generate an fstab file
 # Use genfstab from the Arch Linux install scripts.
 ./genfstab -L /mnt >> /mnt/etc/fstab
+
+# Create a crypttab file.
+cat > /mnt/etc/crypttab <<EOF
+system PARTLABEL=crypt_system none discard
+EOF
 
 # DNF sets the wrong security context for the passwd and shadow files,
 # which prevents setting the root password.
