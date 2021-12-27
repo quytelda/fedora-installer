@@ -25,7 +25,7 @@ parted -a optimal --script -- /dev/vda \
 sleep 1
 
 # Generate a disk encryption password.
-openssl rand -base64 16 > "$LUKS_KEYFILE"
+openssl rand -base64 16 | tr -d '\n' > "$LUKS_KEYFILE"
 
 # Set up disk encryption with LUKS.
 cryptsetup luksFormat \
