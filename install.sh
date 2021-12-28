@@ -54,6 +54,7 @@ dnf -y --installroot=/mnt --releasever=35 install \
     @core \
     @standard \
     btrfs-progs \
+    cryptsetup \
     dosfstools \
     langpacks-en
 
