@@ -7,6 +7,7 @@ LUKS_KEYFILE=${LUKS_KEYFILE:-"$(mktemp)"}
 
 # Sanity Checks
 [[ -f "$LUKS_KEYFILE" ]] || { echo "Missing LUKS key file: $LUKS_KEYFILE" 1>&2; exit 1; }
+command -v openssl &>/dev/null || { echo "Missing openssl package." 1>&2; exit 2; }
 
 # Partition the Disk
 parted -a optimal --script -- /dev/vda \
