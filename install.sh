@@ -98,3 +98,4 @@ touch /mnt/.autorelabel
 
 # Clean up
 umount -R /mnt
+cryptsetup close system
