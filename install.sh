@@ -56,10 +56,12 @@ mount /dev/disk/by-partlabel/boot /mnt/boot
 # Bootstrap system
 dnf -y --installroot=/mnt --releasever=35 install \
     @core \
+    @hardware-support \
     @standard \
     btrfs-progs \
     cryptsetup \
     dosfstools \
+    emacs-nox \
     langpacks-en
 
 # Generate an fstab file
