@@ -8,6 +8,7 @@ LUKS_KEYFILE=${LUKS_KEYFILE:-"$(mktemp)"}
 # Sanity Checks
 [[ -f "$LUKS_KEYFILE" ]] || { echo "Missing LUKS key file: $LUKS_KEYFILE" 1>&2; exit 1; }
 command -v openssl &>/dev/null || { echo "Missing openssl package." 1>&2; exit 2; }
+command -v genfstab &>/dev/null || { echo "Missing arch-install-scripts package." 1>&2; exit 2; }
 
 # Partition the Disk
 parted -a optimal --script -- /dev/vda \
@@ -63,7 +64,7 @@ dnf -y --installroot=/mnt --releasever=35 install \
 
 # Generate an fstab file
 # Use genfstab from the Arch Linux install scripts.
-./genfstab -L /mnt >> /mnt/etc/fstab
+genfstab -L /mnt >> /mnt/etc/fstab
 
 # Create a crypttab file.
 cat > /mnt/etc/crypttab <<EOF
