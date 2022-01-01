@@ -86,10 +86,10 @@ systemd-firstboot --root=/mnt \
 		  --prompt-root-password
 
 # Install the Bootloader
-systemd-nspawn -D /mnt bootctl install
+arch-chroot /mnt bootctl install
 
 # Install the Kernel
-systemd-nspawn -D /mnt dnf -y install kernel
+arch-chroot /mnt dnf -y install kernel
 
 # The boot entries generated when installing the kernel reuse the live system's
 # boot flags, which aren't applicable.
