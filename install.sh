@@ -36,6 +36,8 @@ cryptsetup luksFormat \
 	   --batch-mode \
 	   /dev/disk/by-partlabel/crypt_system
 
+uuid_crypt_system=$(blkid -s UUID -o value /dev/disk/by-partlabel/crypt_system)
+
 cryptsetup open \
 	   --key-file="$LUKS_KEYFILE" \
 	   /dev/disk/by-partlabel/crypt_system \
@@ -65,7 +67,7 @@ dnf -y --installroot=/mnt --releasever=35 install \
 
 # Create a crypttab file.
 cat > /mnt/etc/crypttab <<EOF
-system PARTLABEL=crypt_system none discard
+system UUID=${uuid_crypt_system} none discard
 EOF
 
 # DNF sets the wrong security context for the passwd and shadow files,
@@ -91,7 +93,8 @@ systemd-nspawn -D /mnt dnf -y install kernel
 # The boot entries generated when installing the kernel reuse the live system's
 # boot flags, which aren't applicable.
 # Overwrite those with something sensible.
-sed -i 's/\(^options[[:space:]]\+\).*/\1ro root=LABEL=system quiet/g' /mnt/boot/loader/entries/*.conf
+cmdline="rd.luks.name=${uuid_crypt_system}=system ro root=LABEL=system quiet"
+sed -i "s/\(^options[[:space:]]\+\).*/\1${cmdline}/g" /mnt/boot/loader/entries/*.conf
 
 # Schedule an SELinux relabeling at next boot.
 touch /mnt/.autorelabel
