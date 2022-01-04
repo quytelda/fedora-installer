@@ -7,8 +7,11 @@ LUKS_KEYFILE=${LUKS_KEYFILE:-"$(mktemp)"}
 
 # Sanity Checks
 [[ -f "$LUKS_KEYFILE" ]] || { echo "Missing LUKS key file: $LUKS_KEYFILE" 1>&2; exit 1; }
-command -v openssl &>/dev/null || { echo "Missing openssl package." 1>&2; exit 2; }
-command -v genfstab &>/dev/null || { echo "Missing arch-install-scripts package." 1>&2; exit 2; }
+
+# Install dependancies.
+dnf install -y \
+    arch-install-scripts \
+    pwgen
 
 # Partition the Disk
 parted -a optimal --script -- /dev/vda \
@@ -27,7 +30,7 @@ parted -a optimal --script -- /dev/vda \
 sleep 1
 
 # Generate a disk encryption password.
-openssl rand -base64 16 | tr -d '\n' > "$LUKS_KEYFILE"
+pwgen -s 16 1 | tr -d '\n' > "$LUKS_KEYFILE"
 
 # Set up disk encryption with LUKS.
 cryptsetup luksFormat \
