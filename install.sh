@@ -56,6 +56,9 @@ mount /dev/mapper/system /mnt
 mkdir /mnt/boot
 mount /dev/disk/by-partlabel/boot /mnt/boot
 
+# Disable SELinux Enforcement
+setenforce 0
+
 # Bootstrap system
 dnf -y --installroot=/mnt --releasever=36 install \
     @core \
@@ -75,12 +78,6 @@ genfstab -L /mnt >> /mnt/etc/fstab
 cat > /mnt/etc/crypttab <<EOF
 system UUID=${uuid_crypt_system} none discard
 EOF
-
-# DNF sets the wrong security context for the passwd and shadow files,
-# which prevents setting the root password.
-# Temporarily copy the live system's context for these files to fix the issue.
-chcon --reference=/etc/passwd /mnt/etc/passwd
-chcon --reference=/etc/shadow /mnt/etc/shadow
 
 # Configuration
 systemd-firstboot --root=/mnt \
@@ -106,5 +103,6 @@ sed -i "s/\(^options[[:space:]]\+\).*/\1${cmdline}/g" /mnt/boot/loader/entries/*
 touch /mnt/.autorelabel
 
 # Clean up
+setenforce 1
 umount -R /mnt
 cryptsetup close system
