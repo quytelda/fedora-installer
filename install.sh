@@ -2,10 +2,12 @@
 
 set -eux
 
+DEV_TARGET=${DEV_TARGET:-/dev/vda}
 SYS_HOSTNAME=${SYS_HOSTNAME:-fedora}
 LUKS_KEYFILE=${LUKS_KEYFILE:-"$(mktemp)"}
 
 # Sanity Checks
+[[ -b "$DEV_TARGET"   ]] || { echo "Not a valid block device: $DEV_TARGET" 1>&2; exit 1; }
 [[ -f "$LUKS_KEYFILE" ]] || { echo "Missing LUKS key file: $LUKS_KEYFILE" 1>&2; exit 1; }
 
 # Install dependancies.
@@ -14,7 +16,7 @@ dnf install -y \
     pwgen
 
 # Partition the Disk
-parted -a optimal --script -- /dev/vda \
+parted -a optimal --script -- "$DEV_TARGET" \
        mklabel gpt \
        \
        mkpart primary 1MiB 1025MiB \
