@@ -57,7 +57,7 @@ mkdir /mnt/boot
 mount /dev/disk/by-partlabel/boot /mnt/boot
 
 # Bootstrap system
-dnf -y --installroot=/mnt --releasever=35 install \
+dnf -y --installroot=/mnt --releasever=36 install \
     @core \
     @hardware-support \
     @standard \
