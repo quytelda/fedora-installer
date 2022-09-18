@@ -54,7 +54,7 @@ mkfs.fat -F 32 -n boot /dev/disk/by-partlabel/boot
 mkfs.btrfs -L system /dev/mapper/system
 
 # Mount
-mount /dev/mapper/system /mnt
+mount -o compress=zstd /dev/mapper/system /mnt
 mkdir /mnt/boot
 mount /dev/disk/by-partlabel/boot /mnt/boot
 
