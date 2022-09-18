@@ -5,10 +5,12 @@ set -eux
 DEV_TARGET=${DEV_TARGET:-/dev/vda}
 SYS_HOSTNAME=${SYS_HOSTNAME:-fedora}
 LUKS_KEYFILE=${LUKS_KEYFILE:-"$(mktemp)"}
+ROOT_PW_FILE=${ROOT_PW_FILE:-"$(mktemp)"}
 
 # Sanity Checks
 [[ -b "$DEV_TARGET"   ]] || { echo "Not a valid block device: $DEV_TARGET" 1>&2; exit 1; }
 [[ -f "$LUKS_KEYFILE" ]] || { echo "Missing LUKS key file: $LUKS_KEYFILE" 1>&2; exit 1; }
+[[ -f "$ROOT_PW_FILE" ]] || { echo "Missing root password file: $ROOT_PW_FILE" 1>&2; exit 1; }
 
 # Install dependancies.
 dnf install -y \
@@ -31,8 +33,9 @@ parted -a optimal --script -- "$DEV_TARGET" \
 # Sleep briefly while the kernel catches up.
 sleep 1
 
-# Generate a disk encryption password.
+# Generate disk encryption and root login passwords.
 pwgen -s 16 1 | tr -d '\n' > "$LUKS_KEYFILE"
+pwgen -s 16 1              > "$ROOT_PW_FILE"
 
 # Set up disk encryption with LUKS.
 cryptsetup luksFormat \
@@ -86,8 +89,10 @@ systemd-firstboot --root=/mnt \
 		  --locale='en_US.UTF-8' \
 		  --timezone='America/Los_Angeles' \
 		  --hostname="$SYS_HOSTNAME" \
-		  --setup-machine-id \
-		  --prompt-root-password
+		  --setup-machine-id
+
+# Set the root password.
+{ echo -n 'root:'; cat "$ROOT_PW_FILE"; } > chpasswd --root=/mnt
 
 # Install the Bootloader
 arch-chroot /mnt bootctl install
