@@ -64,6 +64,15 @@ mkdir -m 0555 /mnt/{proc,sys}
 mkdir -m 1777 /mnt/tmp
 
 mount /dev/disk/by-partlabel/boot /mnt/boot
+mount /run /mnt/run --bind
+
+mount -t proc     proc     /mnt/proc                     -o nosuid,noexec,nodev
+mount -t sysfs    sys      /mnt/sys                      -o nosuid,noexec,nodev,ro
+mount -t efivarfs efivarfs /mnt/sys/firmware/efi/efivars -o nosuid,noexec,nodev
+mount -t devtmpfs udev     /mnt/dev                      -o mode=0755,nosuid
+mount -t devpts   devpts   /mnt/dev/pts                  -o mode=0620,gid=5,nosuid,noexec
+mount -t tmpfs    shm      /mnt/dev/shm                  -o mode=1777,nosuid,nodev
+mount -t tmpfs    tmp      /mnt/tmp                      -o mode=1777,strictatime,nodev,nosuid
 
 # Disable SELinux Enforcement
 setenforce 0
