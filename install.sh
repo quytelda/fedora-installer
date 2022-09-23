@@ -58,7 +58,11 @@ mkfs.btrfs -L system /dev/mapper/system
 
 # Mount
 mount -o compress=zstd /dev/mapper/system /mnt
-mkdir /mnt/boot
+
+mkdir -m 0755 /mnt/{boot,dev,etc,run}
+mkdir -m 0555 /mnt/{proc,sys}
+mkdir -m 1777 /mnt/tmp
+
 mount /dev/disk/by-partlabel/boot /mnt/boot
 
 # Disable SELinux Enforcement
