@@ -102,7 +102,7 @@ systemd-firstboot --root=/mnt \
 		  --setup-machine-id
 
 # Set the root password.
-{ echo -n 'root:'; cat "$ROOT_PW_FILE"; } > chpasswd --root=/mnt
+{ echo -n 'root:'; cat "$ROOT_PW_FILE"; } | chpasswd --root=/mnt
 
 # Install the Bootloader
 arch-chroot /mnt bootctl install
