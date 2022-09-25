@@ -82,9 +82,6 @@ dnf -y --installroot=/mnt --releasever=36 install \
     @core \
     @hardware-support \
     @standard \
-    btrfs-progs \
-    cryptsetup \
-    dosfstools \
     emacs-nox \
     langpacks-en
 
