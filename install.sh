@@ -78,12 +78,12 @@ mount /dev/disk/by-partlabel/boot /mnt/boot
 setenforce 0
 
 # Bootstrap system
-dnf -y --installroot=/mnt --releasever=36 install \
-    @core \
-    @hardware-support \
-    @standard \
-    emacs-nox \
-    langpacks-en
+unshare --fork --pid dnf -y --installroot=/mnt --releasever=36 install \
+	@core \
+	@hardware-support \
+	@standard \
+	emacs-nox \
+	langpacks-en
 
 # Generate an fstab file
 # Use genfstab from the Arch Linux install scripts.
