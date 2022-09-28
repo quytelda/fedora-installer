@@ -133,3 +133,10 @@ touch /mnt/.autorelabel
 setenforce 1
 umount -R /mnt
 cryptsetup close system
+
+# Installation Summary
+set +x
+echo "The installation is complete."
+echo    "Hostname:      ${SYS_HOSTNAME}"
+echo -n "LUKS key:      " && cat "$LUKS_KEYFILE" && echo
+echo -n "Root password: " && cat "$ROOT_PW_FILE"
