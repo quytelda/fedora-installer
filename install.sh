@@ -56,23 +56,23 @@ cryptsetup open \
 mkfs.fat -F 32 -n boot /dev/disk/by-partlabel/boot
 mkfs.btrfs -L system /dev/mapper/system
 
-# Mount
+# Mount Filesystems
 mount -o compress=zstd /dev/mapper/system /mnt
 
 mkdir -m 0755 /mnt/{boot,dev,etc,run}
 mkdir -m 0555 /mnt/{proc,sys}
 mkdir -m 1777 /mnt/tmp
 
-mount /dev/disk/by-partlabel/boot /mnt/boot
-mount /run /mnt/run --bind
+mount proc     /mnt/proc                      -t proc     -o nosuid,noexec,nodev
+mount sys      /mnt/sys                       -t sysfs    -o nosuid,noexec,nodev,ro
+mount efivarfs /mnt/sys/firmware/efi/efivars  -t efivarfs -o nosuid,noexec,nodev
+mount udev     /mnt/dev                       -t devtmpfs -o mode=0755,nosuid
+mount devpts   /mnt/dev/pts                   -t devpts   -o mode=0620,gid=5,nosuid,noexec
+mount shm      /mnt/dev/shm                   -t tmpfs    -o mode=1777,nosuid,nodev
+mount tmp      /mnt/tmp                       -t tmpfs    -o mode=1777,strictatime,nodev,nosuid
 
-mount -t proc     proc     /mnt/proc                     -o nosuid,noexec,nodev
-mount -t sysfs    sys      /mnt/sys                      -o nosuid,noexec,nodev,ro
-mount -t efivarfs efivarfs /mnt/sys/firmware/efi/efivars -o nosuid,noexec,nodev
-mount -t devtmpfs udev     /mnt/dev                      -o mode=0755,nosuid
-mount -t devpts   devpts   /mnt/dev/pts                  -o mode=0620,gid=5,nosuid,noexec
-mount -t tmpfs    shm      /mnt/dev/shm                  -o mode=1777,nosuid,nodev
-mount -t tmpfs    tmp      /mnt/tmp                      -o mode=1777,strictatime,nodev,nosuid
+mount /run /mnt/run --bind
+mount /dev/disk/by-partlabel/boot /mnt/boot
 
 # Disable SELinux Enforcement
 setenforce 0
@@ -103,6 +103,16 @@ systemd-firstboot --root=/mnt \
 
 # Set the root password.
 { echo -n 'root:'; cat "$ROOT_PW_FILE"; } | chpasswd --root=/mnt
+
+# Unmount API filesystems
+umount /mnt/run
+umount /mnt/tmp
+umount /mnt/dev/shm
+umount /mnt/dev/pts
+umount /mnt/dev
+umount /mnt/sys/firmware/efi/efivars
+umount /mnt/sys
+umount /mnt/proc
 
 # Install the Bootloader
 arch-chroot /mnt bootctl install
