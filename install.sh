@@ -129,6 +129,10 @@ sed -i "s/\(^options[[:space:]]\+\).*/\1${cmdline}/g" /mnt/boot/loader/entries/*
 # Schedule an SELinux relabeling at next boot.
 touch /mnt/.autorelabel
 
+# Fix the hardware database's SELinux label.
+# systemd-hwdb-update.service fails on boot if this label isn't corrected.
+chcon -t systemd_hwdb_etc_t /mnt/etc/udev/hwdb.bin
+
 # Clean up
 setenforce 1
 umount -R /mnt
